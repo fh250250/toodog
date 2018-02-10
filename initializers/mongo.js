@@ -2,7 +2,7 @@
 const { Initializer, api } = require('actionhero')
 const { MongoClient } = require('mongodb')
 
-module.exports = class MyInitializer extends Initializer {
+module.exports = class MongoInitializer extends Initializer {
   constructor () {
     super()
     this.name = 'mongo'
@@ -12,18 +12,14 @@ module.exports = class MyInitializer extends Initializer {
   }
 
   async initialize () {
-    api['mongo'] = {
-      client: null,
-      db: null
-    }
-  }
-
-  async start () {
     const { host, port, database }  = api.config.mongo
 
+    api.mongo = {}
     api.mongo.client = await MongoClient.connect(`mongodb://${host}:${port}`)
     api.mongo.db = api.mongo.client.db(database)
   }
+
+  // async start () {}
 
   async stop () {
     await api.mongo.client.close()

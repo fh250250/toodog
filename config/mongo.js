@@ -1,5 +1,5 @@
 exports['default'] = {
-  mongo: api => {
+  mongo: (api) => {
     return {
       host: 'localhost',
       port: 27017,
