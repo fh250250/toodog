@@ -15,11 +15,9 @@ module.exports = class ProxyTask extends Task {
     const count = await col.find({ rank: { $gte: 20 } }).count()
 
     if (total < 500 || count / total > 0.2) {
-      api.log('[Proxy] Crawl...')
       await api.proxy.crawl()
     }
 
-    api.log('[Proxy] Check...')
     await api.proxy.check()
   }
 }

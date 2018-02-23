@@ -101,6 +101,7 @@ module.exports = class ProxyInitializer extends Initializer {
     await col.createIndex({ addr: 1 }, { unique: true })
     await col.createIndex({ rank: 1 })
     await col.createIndex({ t: 1 })
+    await col.createIndex({ usedAt: 1 })
 
     api.proxy = {}
     api.proxy.SPIDERS = SPIDERS
@@ -130,7 +131,8 @@ module.exports = class ProxyInitializer extends Initializer {
                                       rank: 10,
                                       comboSuccess: 0,
                                       comboFailure: 0,
-                                      t: new Date()
+                                      t: new Date(),
+                                      usedAt: new Date()
                                     }))
 
           // 写入数据库
@@ -187,6 +189,15 @@ module.exports = class ProxyInitializer extends Initializer {
           )
         }
       }))
+    }
+
+    // 获取一个有效的代理
+    api.proxy.findOne = () => {
+      return col.findOneAndUpdate(
+        { rank: { $gte: 20 } },
+        { $currentDate: { usedAt: true } },
+        { sort: { usedAt: 1 } }
+      ).then(r => r.value)
     }
   }
 
