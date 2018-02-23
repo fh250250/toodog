@@ -95,14 +95,6 @@ module.exports = class ProxyInitializer extends Initializer {
   }
 
   async initialize () {
-    const col = api.mongo.db.collection('proxy')
-
-    // 创建索引
-    await col.createIndex({ addr: 1 }, { unique: true })
-    await col.createIndex({ rank: 1 })
-    await col.createIndex({ t: 1 })
-    await col.createIndex({ usedAt: 1 })
-
     api.proxy = {}
     api.proxy.SPIDERS = SPIDERS
 
@@ -136,7 +128,7 @@ module.exports = class ProxyInitializer extends Initializer {
                                     }))
 
           // 写入数据库
-          await col.insertMany(proxies, { ordered: false })
+          await api.mongo.db.collection('proxy').insertMany(proxies, { ordered: false })
         } catch (e) {
           // Eat all exceptions
         }
@@ -151,7 +143,7 @@ module.exports = class ProxyInitializer extends Initializer {
     // 验证
     api.proxy.check = async () => {
       // 取最早的 100 个来更新
-      const proxies = await col.find({}).sort('t', 1).limit(100).toArray()
+      const proxies = await api.mongo.db.collection('proxy').find({}).sort('t', 1).limit(100).toArray()
 
       await Promise.all(proxies.map(async p => {
         if (await ping(p)) {
@@ -171,10 +163,10 @@ module.exports = class ProxyInitializer extends Initializer {
 
         if (p.rank <= 0) {
           // 删除
-          await col.deleteOne({ _id: ObjectId(p._id) })
+          await api.mongo.db.collection('proxy').deleteOne({ _id: ObjectId(p._id) })
         } else {
           // 更新
-          await col.updateOne(
+          await api.mongo.db.collection('proxy').updateOne(
             { _id: ObjectId(p._id) },
             {
               $set: {
@@ -193,7 +185,7 @@ module.exports = class ProxyInitializer extends Initializer {
 
     // 获取一个有效的代理
     api.proxy.findOne = () => {
-      return col.findOneAndUpdate(
+      return api.mongo.db.collection('proxy').findOneAndUpdate(
         { rank: { $gte: 20 } },
         { $currentDate: { usedAt: true } },
         { sort: { usedAt: 1 } }

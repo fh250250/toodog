@@ -46,12 +46,6 @@ module.exports = class AccountInitializer extends Initializer {
   }
 
   async initialize () {
-    const col = api.mongo.db.collection('account')
-
-    // 创建索引
-    await col.createIndex({ commentAt: 1 })
-    await col.createIndex({ likeAt: 1 })
-
     api.account = {}
 
     api.account.register = async () => {
@@ -73,7 +67,7 @@ module.exports = class AccountInitializer extends Initializer {
       }
 
       const account = await register(mobile, code, deviceid, proxy)
-      await col.insertOne(account)
+      await api.mongo.db.collection('account').insertOne(account)
     }
   }
 
