@@ -1,6 +1,6 @@
 'use strict'
 
-const ActionHero = require('actionhero')
+const { Action, api } = require('actionhero')
 const path = require('path')
 const packageJSON = require(path.normalize(path.join(__dirname, '..', 'package.json')))
 
@@ -9,10 +9,10 @@ const maxEventLoopDelay = process.env.eventLoopDelay || 10
 const maxMemoryAlloted = process.env.maxMemoryAlloted || 200
 const maxResqueQueueLength = process.env.maxResqueQueueLength || 1000
 
-module.exports = class RandomNumber extends ActionHero.Action {
+exports.serverStatus = class serverStatus extends Action {
   constructor () {
     super()
-    this.name = 'status'
+    this.name = 'serverStatus'
     this.description = 'I will return some basic information about the API'
     this.outputExample = {
       'id': '192.168.2.11',
@@ -31,7 +31,6 @@ module.exports = class RandomNumber extends ActionHero.Action {
   }
 
   async checkEventLoop (data) {
-    const api = ActionHero.api
     let eventLoopDelay = await api.utils.eventLoopDelay(10000)
     data.response.eventLoopDelay = eventLoopDelay
     if (eventLoopDelay > maxEventLoopDelay) {
@@ -41,7 +40,6 @@ module.exports = class RandomNumber extends ActionHero.Action {
   }
 
   async checkResqueQueues (data) {
-    const api = ActionHero.api
     let details = await api.tasks.details()
     let length = 0
     Object.keys(details.queues).forEach((q) => {
@@ -57,8 +55,6 @@ module.exports = class RandomNumber extends ActionHero.Action {
   }
 
   async run (data) {
-    const api = ActionHero.api
-
     data.response.nodeStatus = data.connection.localize('Node Healthy')
     data.response.problems = []
 
@@ -72,5 +68,24 @@ module.exports = class RandomNumber extends ActionHero.Action {
     await this.checkRam(data)
     await this.checkEventLoop(data)
     await this.checkResqueQueues(data)
+  }
+}
+
+exports.proxyStatus = class proxyStatus extends Action {
+  constructor () {
+    super()
+    this.name = 'proxyStatus'
+    this.description = 'status about proxy'
+    this.outputExample = {
+      count: 50,
+      total: 100
+    }
+  }
+
+  async run ({ response }) {
+    const col = api.mongo.db.collection('proxy')
+
+    response.count = await col.count({ rank: { $gte: 20 } })
+    response.total = await col.count()
   }
 }

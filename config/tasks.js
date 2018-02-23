@@ -32,7 +32,7 @@ exports['default'] = {
       timeout: 5000,
       // at minimum, how many parallel taskProcessors should this node spawn?
       // (have number > 0 to enable, and < 1 to disable)
-      minTaskProcessors: 5,
+      minTaskProcessors: 3,
       // at maximum, how many parallel taskProcessors should this node spawn?
       maxTaskProcessors: 0,
       // how often should we check the event loop to spawn more taskProcessors?
