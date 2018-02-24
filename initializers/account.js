@@ -69,6 +69,55 @@ module.exports = class AccountInitializer extends Initializer {
       const account = await register(mobile, code, deviceid, proxy)
       await api.mongo.db.collection('account').insertOne(account)
     }
+
+    api.account.login = async (username, password) => {
+      const proxy = await api.proxy.findOne()
+
+      if (!proxy) { throw new Error('没有足够的代理') }
+
+      const res = await request({
+        url: 'http://www.yidianzixun.com/mp_sign_in',
+        method: 'post',
+        headers: { 'user-agent': faker.internet.userAgent() },
+        proxy: proxy.addr,
+        timeout: 5000,
+        form: { username, password },
+        json: true,
+        resolveWithFullResponse: true
+      })
+
+      const json = res.body
+
+      if (json.code) { throw new Error(json.reason) }
+      if (!json.userid) { throw new Error('登陆失败，无用户数据') }
+
+      const account = await api.mongo.db.collection('account').findOne({ username })
+
+      if (account) {
+        await api.mongo.db.collection('account').updateOne(
+          { _id: account._id },
+          {
+            $set: {
+              cookie: json.cookie,
+              webCookie: res.headers['set-cookie'].join(';')
+            }
+          }
+        )
+      } else {
+        await api.mongo.db.collection('account').insertOne({
+          userid: json.userid,
+          username: json.username,
+          nickname: json.nickname,
+          cookie: json.cookie,
+          webCookie: res.headers['set-cookie'].join(';'),
+          password,
+          commentCount: 0,
+          likeCount: 0,
+          commentAt: new Date(),
+          likeAt: new Date()
+        })
+      }
+    }
   }
 
   // async start () {}
@@ -114,6 +163,7 @@ async function sendCode (mobile, deviceid, proxy) {
       appid: 'yidian',
       deviceid
     },
+    timeout: 5000,
     proxy: proxy.addr,
     json: true
   })
@@ -154,6 +204,7 @@ async function register (mobile, code, deviceid, proxy) {
       _: Date.now()
     },
     proxy: proxy.addr,
+    timeout: 5000,
     json: true,
     resolveWithFullResponse: true
   })

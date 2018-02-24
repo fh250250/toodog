@@ -56,6 +56,7 @@ module.exports = class ProcessTask extends Task {
         },
         form: { docid: task.articleId, comment: task.comment },
         json: true,
+        timeout: 5000,
         proxy: proxy.addr
       })
     } catch (e) { return }
@@ -141,6 +142,7 @@ module.exports = class ProcessTask extends Task {
         },
         qs: { commentid: task.commentId, appid: 'yidian', _: Date.now() },
         json: true,
+        timeout: 5000,
         proxy: proxy.addr
       })
     } catch (e) { return }
