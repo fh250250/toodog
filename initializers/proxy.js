@@ -3,7 +3,6 @@ const { Initializer, api } = require('actionhero')
 const request = require('request-promise-native')
 const faker = require('faker')
 const cheerio = require('cheerio')
-const { ObjectId } = require('mongodb')
 
 // 爬虫定义
 const SPIDERS = [
@@ -163,11 +162,11 @@ module.exports = class ProxyInitializer extends Initializer {
 
         if (p.rank <= 0) {
           // 删除
-          await api.mongo.db.collection('proxy').deleteOne({ _id: ObjectId(p._id) })
+          await api.mongo.db.collection('proxy').deleteOne({ _id: p._id })
         } else {
           // 更新
           await api.mongo.db.collection('proxy').updateOne(
-            { _id: ObjectId(p._id) },
+            { _id: p._id },
             {
               $set: {
                 comboSuccess: p.comboSuccess,
