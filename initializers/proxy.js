@@ -201,8 +201,8 @@ function ping (proxy) {
     url: 'http://httpbin.org/ip',
     timeout: 5000,
     proxy: proxy.addr,
-    resolveWithFullResponse: true
+    json: true
   })
-  .then(response => response.statusCode === 200)
+  .then(json => json.origin)
   .catch(() => false)
 }

@@ -1,9 +1,9 @@
 <template lang="pug">
 #app
   Row(type="flex")
-    Col(span="8")
+    Col(span="6")
       Status
-    Col(span="16")
+    Col(span="18")
       Tasks
 </template>
 
@@ -15,3 +15,8 @@ export default {
   components: { Status, Tasks }
 }
 </script>
+
+<style lang="stylus" scoped>
+#app
+  padding 20px 0
+</style>

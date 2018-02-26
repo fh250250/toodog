@@ -8,7 +8,7 @@ module.exports = class ProcessTask extends Task {
     super()
     this.name = 'process'
     this.description = 'process the task'
-    this.frequency = 60 * 1000
+    this.frequency = 30 * 1000
   }
 
   async run (data) {
@@ -23,7 +23,7 @@ module.exports = class ProcessTask extends Task {
       await this.processStage0Task(task)
     }
 
-    const stage1Tasks = await api.mongo.db.collection('tasks')
+    const stage1Tasks = await api.mongo.db.collection('task')
                                           .find({ stage: 1 })
                                           .sort('t', 1)
                                           .limit(PROCESS_COUNT - stage0Tasks.length)

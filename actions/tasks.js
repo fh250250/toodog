@@ -28,3 +28,15 @@ exports.addTask = class addTask extends Action {
     })
   }
 }
+
+exports.listTask = class listTask extends Action {
+  constructor () {
+    super()
+    this.name = 'listTask'
+    this.description = 'get task list'
+  }
+
+  async run ({ response }) {
+    response.tasks = await api.mongo.db.collection('task').find({}).toArray()
+  }
+}

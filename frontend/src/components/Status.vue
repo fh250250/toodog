@@ -1,9 +1,12 @@
 <template lang="pug">
 .status
-  .proxy
-    span 代理
-    span 可用 {{ proxy.count }}
-    span 总共 {{ proxy.total }}
+  Card(class="proxy")
+    p(slot="title") 代理
+    ul
+      li
+        span 可用 {{ proxy.count }}
+      li
+        span 总共 {{ proxy.total }}
 </template>
 
 <script>
@@ -27,7 +30,7 @@ export default {
       this.proxy.count = data.count
       this.proxy.total = data.total
 
-      setTimeout(this.pollProxyStatus, 5000)
+      setTimeout(this.pollProxyStatus, 10 * 1000)
     }
   }
 }
@@ -35,9 +38,5 @@ export default {
 
 <style lang="stylus" scoped>
 .status
-  padding 10px
-  .proxy
-    font-size 20px
-    span:not(:last-child)
-      margin-right 20px
+  padding 0 20px
 </style>
