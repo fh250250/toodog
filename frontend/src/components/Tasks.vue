@@ -8,7 +8,8 @@
     FormItem(prop="comment", label="评论")
       Input(type="text", v-model="task.comment", style="width: 400px")
     Button(type="primary", @click="submit") 提交
-  Table(:columns="columns", :data="tasks", border, size="small")
+  Table(:columns="columns", :data="tasks", border, size="small", :loading="loading")
+  Page(:styles="{ marginTop: '10px' }", :total="total", :page-size="pageSize", :current="page", @on-change="changePage", @on-page-size-change="changePageSize", show-elevator, show-sizer, placement="top")
 </template>
 
 <script>
@@ -18,7 +19,8 @@ const STAGE = {
   0: ['评论中', 'blue'],
   1: ['点赞中', 'yellow'],
   2: ['完成', 'green'],
-  '-1': ['失败', 'red']
+  '-1': ['评论失败', 'red'],
+  '-2': ['点赞失败', 'red']
 }
 
 export default {
@@ -40,6 +42,7 @@ export default {
       columns: [
         {
           title: '文章',
+          width: 100,
           render: (h, params) => {
             return h('a', {
               attrs: {
@@ -49,27 +52,64 @@ export default {
             }, params.row.articleId)
           }
         },
-        { title: '评论', key: 'comment' },
+        { title: '评论', key: 'comment', ellipsis: true },
         {
           title: '点赞数',
+          width: 100,
           render: (h, params) => {
             return `${params.row.likeCount} / ${params.row.targetLikeCount}`
           }
         },
         {
           title: '状态',
+          width: 150,
+          filters: [
+            { label: STAGE[0][0], value: 0 },
+            { label: STAGE[1][0], value: 1 },
+            { label: STAGE[2][0], value: 2 },
+            { label: STAGE['-1'][0], value: -1 },
+            { label: STAGE['-2'][0], value: -2 }
+          ],
+          filterRemote: value => {
+            this.stageFilter = value
+            this.page = 1
+            this.refresh()
+          },
           render: (h, params) => {
-            return h('Tag', {
-              props: {
-                type: 'dot',
-                color: STAGE[params.row.stage][1]
-              }
-            }, STAGE[params.row.stage][0])
+            const children = [
+              h('Tag', {
+                props: {
+                  color: STAGE[params.row.stage][1]
+                }
+              }, STAGE[params.row.stage][0])
+            ]
+
+            if (params.row.stage < 0) {
+              children.push(h('Button', {
+                props: {
+                  type: 'primary',
+                  size: 'small'
+                },
+                style: {
+                  marginRight: '5px'
+                },
+                on: {
+                  click: () => this.retry(params.row._id)
+                }
+              }, '重试'))
+            }
+
+            return h('div', children)
           }
         },
-        { title: '错误', key: 'err' }
+        { title: '错误', key: 'err', ellipsis: true, width: 200 }
       ],
-      tasks: []
+      tasks: [],
+      stageFilter: [],
+      total: 0,
+      pageSize: 20,
+      page: 1,
+      loading: false
     }
   },
   created () {
@@ -93,11 +133,33 @@ export default {
       })
     },
     async pollTasks () {
-      const { data } = await axios('/api/listTask')
+      await this.refresh()
+      setTimeout(this.pollTasks, 30 * 1000)
+    },
+    async refresh () {
+      this.loading = true
+      const { data } = await axios.post('/api/listTask', {
+        stageFilter: this.stageFilter,
+        pageSize: this.pageSize,
+        page: this.page
+      })
 
       this.tasks = data.tasks
-
-      setTimeout(this.pollTasks, 30 * 1000)
+      this.total = data.total
+      this.loading = false
+    },
+    async retry (taskId) {
+      await axios.post('/api/retryTask', { taskId })
+      await this.refresh()
+    },
+    changePage (page) {
+      this.page = page
+      this.refresh()
+    },
+    changePageSize (pageSize) {
+      this.pageSize = pageSize
+      this.page = 1
+      this.refresh()
     }
   }
 }

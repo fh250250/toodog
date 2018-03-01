@@ -116,7 +116,7 @@ module.exports = class ProcessTask extends Task {
 
   async processStage1Task (task) {
     const proxy = await api.mongo.db.collection('proxy').findOneAndUpdate(
-      { rank: { $gte: 20 }, _id: { $nin: task.likeProxies } },
+      { rank: { $gte: 20 }, addr: { $nin: task.likeProxies } },
       { $currentDate: { usedAt: true } },
       { sort: { usedAt: 1 } }
     ).then(r => r.value)
@@ -152,7 +152,7 @@ module.exports = class ProcessTask extends Task {
       await api.mongo.db.collection('task').updateOne(
         { _id: task._id },
         {
-          $set: { stage: -1, err: json.reason },
+          $set: { stage: -2, err: json.reason },
           $currentDate: { t: true }
         }
       )
@@ -167,7 +167,7 @@ module.exports = class ProcessTask extends Task {
         {
           $set: { stage: task.likeCount + 1 < task.targetLikeCount ? 1 : 2 },
           $inc: { likeCount: 1 },
-          $push: { likeProxies: proxy._id, likeAccounts: account._id },
+          $push: { likeProxies: proxy.addr, likeAccounts: account._id },
           $currentDate: { t: true }
         }
       )
