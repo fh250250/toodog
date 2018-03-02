@@ -62,7 +62,7 @@ export default {
         },
         {
           title: '状态',
-          width: 150,
+          width: 120,
           filters: [
             { label: STAGE[0][0], value: 0 },
             { label: STAGE[1][0], value: 1 },
@@ -76,16 +76,22 @@ export default {
             this.refresh()
           },
           render: (h, params) => {
-            const children = [
-              h('Tag', {
-                props: {
-                  color: STAGE[params.row.stage][1]
-                }
-              }, STAGE[params.row.stage][0])
-            ]
+            return h('Tag', {
+              props: {
+                color: STAGE[params.row.stage][1]
+              }
+            }, STAGE[params.row.stage][0])
+          }
+        },
+        { title: '错误', key: 'err', ellipsis: true, width: 200 },
+        {
+          title: '操作',
+          width: 150,
+          render: (h, params) => {
+            if (params.row.stage >= 0) { return }
 
-            if (params.row.stage < 0) {
-              children.push(h('Button', {
+            return h('div', [
+              h('Button', {
                 props: {
                   type: 'primary',
                   size: 'small'
@@ -96,13 +102,19 @@ export default {
                 on: {
                   click: () => this.retry(params.row._id)
                 }
-              }, '重试'))
-            }
-
-            return h('div', children)
+              }, '重试'),
+              h('Button', {
+                props: {
+                  type: 'error',
+                  size: 'small'
+                },
+                on: {
+                  click: () => this.removeTask(params.row._id)
+                }
+              }, '删除')
+            ])
           }
-        },
-        { title: '错误', key: 'err', ellipsis: true, width: 200 }
+        }
       ],
       tasks: [],
       stageFilter: [],
@@ -150,6 +162,10 @@ export default {
     },
     async retry (taskId) {
       await axios.post('/api/retryTask', { taskId })
+      await this.refresh()
+    },
+    async removeTask (taskId) {
+      await axios.post('/api/removeTask', { taskId })
       await this.refresh()
     },
     changePage (page) {

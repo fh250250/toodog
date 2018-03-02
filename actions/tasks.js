@@ -87,3 +87,26 @@ exports.retryTask = class retryTask extends Action {
     }
   }
 }
+
+exports.removeTask = class removeTask extends Action {
+  constructor () {
+    super()
+    this.name = 'removeTask'
+    this.description = 'remove the task'
+    this.inputs = {
+      taskId: { required: true }
+    }
+  }
+
+  async run ({ params }) {
+    const col = api.mongo.db.collection('task')
+    const task = await col.findOne({ _id: ObjectId(params.taskId) })
+
+    if (!task) { return }
+
+    if (task.stage >= 0) { return }
+
+    await col.deleteOne({ _id: task._id })
+  }
+}
+
