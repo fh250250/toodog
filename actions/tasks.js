@@ -55,7 +55,6 @@ exports.listTask = class listTask extends Action {
                                           .sort('t', -1)
                                           .toArray()
     response.total = await col.count(query)
-    response.pageSize = params.pageSize
   }
 }
 
