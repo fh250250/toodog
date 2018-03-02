@@ -4,7 +4,7 @@
     FormItem(prop="articleId", label="文章 ID")
       Input(type="text", v-model="task.articleId", style="width: 100px")
     FormItem(prop="targetLikeCount", label="点赞数")
-      InputNumber(v-model="task.targetLikeCount", :min="1", :max="80")
+      InputNumber(v-model="task.targetLikeCount", :min="1", :max="200")
     FormItem(prop="comment", label="评论")
       Input(type="text", v-model="task.comment", style="width: 400px")
     Button(type="primary", @click="submit") 提交
