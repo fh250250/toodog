@@ -97,7 +97,7 @@ module.exports = class ProcessTask extends Task {
     while (tryTimes++ < 3) {
       account = await api.mongo.db.collection('account')
                                   .findOneAndUpdate(
-                                    { commentCount: { $lt: 5 } },
+                                    { commentCount: { $lt: 3 } },
                                     { $currentDate: { commentAt: true } },
                                     { sort: { commentAt: 1 } }
                                   ).then(r => r.value)
