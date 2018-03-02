@@ -8,7 +8,7 @@ module.exports = class ProcessTask extends Task {
     super()
     this.name = 'process'
     this.description = 'process the task'
-    this.frequency = 30 * 1000
+    this.frequency = 60 * 1000
   }
 
   async run (data) {
